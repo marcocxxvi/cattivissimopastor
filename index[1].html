@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OPERAZIONE RICONGIUNGIMENTO // Dossier Riservato</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="bgcanvas"></canvas>
+<div class="noise"></div>
+<div class="vignette"></div>
+
+<div class="topbar">
+  <div class="brand" id="logoClick">⌖ OPERAZIONE&nbsp;RICONGIUNGIMENTO</div>
+  <div class="right">
+    <span><span class="dot"></span> STATO: ATTIVO</span>
+    <button class="soundtoggle" id="soundBtn">🔊 AUDIO ON</button>
+  </div>
+</div>
+
+<div id="toastbox"></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="stamp">TOP SECRET — SOLO PER IL GRUPPO</div>
+  <div class="eyebrow">Dossier Operativo N. 07-GS/GP</div>
+  <h1>IL GRANDE<br>RICONGIUNGIMENTO</h1>
+  <p class="sub">Il 21 luglio, ore 20:00, due linee genetiche indipendenti ma otticamente identiche convergeranno nello stesso cinema. <b>Giuseppe Sarcinella</b> e <b>Giuseppe Pastore</b> saranno, per la prima volta nella storia documentata del gruppo, nella stessa stanza.</p>
+
+  <div class="countdown" id="countdown">
+    <div class="cd-box"><div class="cd-num" id="cd-d">00</div><div class="cd-label">Giorni</div></div>
+    <div class="cd-box"><div class="cd-num" id="cd-h">00</div><div class="cd-label">Ore</div></div>
+    <div class="cd-box"><div class="cd-num" id="cd-m">00</div><div class="cd-label">Minuti</div></div>
+    <div class="cd-box"><div class="cd-num" id="cd-s">00</div><div class="cd-label">Secondi</div></div>
+  </div>
+
+  <div class="scrollcue"><span>ACCEDI AL DOSSIER</span><div class="line"></div></div>
+</section>
+
+<div class="wrap">
+
+  <!-- MISSION BRIEFING -->
+  <section id="briefing">
+    <div class="section-head">
+      <div class="tag">Sezione 01</div>
+      <h2>Mission Briefing</h2>
+      <p>Fascicolo riservato. Accesso consentito solo al personale autorizzato della chat di gruppo.</p>
+    </div>
+
+    <div class="card dossier">
+      <div class="dossier-grid">
+        <div class="agent">
+          <div class="avatar" id="av1">GS</div>
+          <div>
+            <h3>Giuseppe Sarcinella</h3>
+            <div class="role">Soggetto Primario</div>
+            <p>Ignaro protagonista della missione. Da anni oggetto di una running gag collettiva a causa della sua presunta somiglianza con il Soggetto Secondario. Nessun precedente contatto diretto registrato.</p>
+          </div>
+        </div>
+        <div class="agent">
+          <div class="avatar" id="av2">GP</div>
+          <div>
+            <h3>Giuseppe Pastore</h3>
+            <div class="role">Soggetto Secondario ("Il Sosia")</div>
+            <p>Ospite ufficiale dell'evento cinematografico. Ignaro di essere, da anni, il metro di paragone estetico non richiesto di un perfetto sconosciuto.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="brief-lines">
+        <div class="row"><span>Data operazione</span><span>21 Luglio, ore 20:00</span></div>
+        <div class="row"><span>Location</span><span class="redacted">Cinema — coordinate classificate</span></div>
+        <div class="row"><span>Codice missione</span><span class="redacted">PASTORE-2</span></div>
+        <div class="row"><span>Obiettivo primario</span><span>Contatto visivo diretto tra i due soggetti</span></div>
+        <div class="row"><span>Obiettivo secondario</span><span>Foto di gruppo per l'archivio storico della chat</span></div>
+        <div class="row"><span>Rischio di negazione</span><span>Alto (Pastore potrebbe non vedere la somiglianza)</span></div>
+        <div class="row"><span>Personale sul campo</span><span>1 soggetto, 0 supporto, gruppo WhatsApp in ascolto</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAUGES -->
+  <section id="gauges-section">
+    <div class="section-head">
+      <div class="tag">Sezione 02</div>
+      <h2>Metriche Operative</h2>
+      <p>Dati raccolti in tempo reale dal sistema di analisi predittiva del gruppo.</p>
+    </div>
+    <div class="gauges">
+      <div class="card gauge-card">
+        <div class="gauge-title">Probabilità di Successo</div>
+        <svg class="dial" viewBox="0 0 200 120">
+          <path d="M20,110 A80,80 0 0 1 180,110" fill="none" stroke="#151518" stroke-width="14" stroke-linecap="round"/>
+          <path id="gaugeArc" d="M20,110 A80,80 0 0 1 180,110" fill="none" stroke="url(#gaugeGrad)" stroke-width="14" stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="251"/>
+          <defs>
+            <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#8a6d1f"/>
+              <stop offset="100%" stop-color="#f6dd8a"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="dial-val" id="probVal">--%</div>
+        <div class="dial-caption" id="probCaption">Calcolo in corso…</div>
+      </div>
+
+      <div class="card gauge-card">
+        <div class="gauge-title">Livello di Autismo della Missione</div>
+        <div class="autism-pct" id="autismPct">0%</div>
+        <div class="autism-track"><div class="autism-fill" id="autismFill"></div></div>
+        <div class="autism-label" id="autismLabel" style="margin-top:12px;">CALIBRAZIONE…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section id="timeline-section">
+    <div class="section-head">
+      <div class="tag">Sezione 03</div>
+      <h2>Cronologia della Lore</h2>
+      <p>Ricostruzione storica ufficiale degli eventi che hanno portato all'Operazione Ricongiungimento.</p>
+    </div>
+    <div class="timeline">
+      <div class="t-item"><div class="t-dot"></div><div class="t-year">2018</div><div class="t-title">Primo Avvistamento</div><div class="t-desc">Un membro del gruppo nota, in fila al bar, un uomo "identico a Sarcinella". Nessuno gli crede.</div></div>
+      <div class="t-item"><div class="t-dot"></div><div class="t-year">2019</div><div class="t-title">Battesimo del Nome</div><div class="t-desc">Il gruppo WhatsApp ribattezza ufficialmente Sarcinella con il nome "Pastore" per la prima volta. La gag è servita.</div></div>
+      <div class="t-item"><div class="t-dot"></div><div class="t-year">2020</div><div class="t-title">Falso Allarme Social</div><div class="t-desc">Una foto di Pastore viene scambiata per Sarcinella su Facebook. Panico, poi ilarità generale nel gruppo.</div></div>
+      <div class="t-item"><div class="t-dot"></div><div class="t-year">2021</div><div class="t-title">Occasione Mancata</div><div class="t-desc">I due soggetti si trovano, non confermato, nello stesso locale. Nessun contatto avviene. Il rimpianto collettivo cresce.</div></div>
+      <div class="t-item"><div class="t-dot"></div><div class="t-year">2023</div><div class="t-title">Teoria del Multiverso</div><div class="t-desc">Nasce ufficialmente la "Teoria Sarcinella-Pastore": due entità della stessa persona in universi paralleli.</div></div>
+      <div class="t-item"><div class="t-dot"></div><div class="t-year">2025</div><div class="t-title">Segnalazione Strategica</div><div class="t-desc">Fonti interne confermano: Pastore sarà ospite in un cinema. L'intelligence del gruppo entra in stato di allerta.</div></div>
+      <div class="t-item"><div class="t-dot"></div><div class="t-year">2026</div><div class="t-title">IL GRANDE RICONGIUNGIMENTO</div><div class="t-desc">21 luglio, ore 20:00. L'operazione viene lanciata ufficialmente. La storia sta per essere scritta.</div></div>
+    </div>
+  </section>
+
+  <!-- BETS -->
+  <section id="bets-section">
+    <div class="section-head">
+      <div class="tag">Sezione 04</div>
+      <h2>Scommesse Operative</h2>
+      <p>Seleziona un esito. I dati vengono aggregati in tempo reale nel registro del gruppo. Un voto per dispositivo.</p>
+    </div>
+    <div class="bets-grid" id="betsGrid"></div>
+    <div class="bet-hint">Clicca una casella per registrare la tua previsione ufficiale.</div>
+  </section>
+
+  <!-- SUGGESTIONS -->
+  <section id="suggest-section">
+    <div class="section-head">
+      <div class="tag">Sezione 05</div>
+      <h2>Suggerisci Cosa Dire a Pastore</h2>
+      <p>Ogni suggerimento entra a far parte del verbale ufficiale della missione. Scegli con cura le parole.</p>
+    </div>
+    <div class="card suggest-box">
+      <div class="suggest-form">
+        <textarea id="suggestInput" maxlength="220" placeholder='Es: "Salve, sono il suo secondo capitolo."'></textarea>
+        <button class="btn-gold" id="suggestBtn">Registra nel verbale</button>
+      </div>
+      <div class="suggest-list" id="suggestList"></div>
+    </div>
+  </section>
+
+  <!-- OUTCOME VOTE -->
+  <section id="outcome-section">
+    <div class="section-head">
+      <div class="tag">Sezione 06</div>
+      <h2>Previsione dell'Esito Finale</h2>
+      <p>Vota quale sarà il risultato ufficiale della missione. Un voto per dispositivo.</p>
+    </div>
+    <div class="outcome-grid" id="outcomeGrid"></div>
+  </section>
+
+  <!-- ACHIEVEMENTS -->
+  <section id="ach-section">
+    <div class="section-head">
+      <div class="tag">Sezione 07</div>
+      <h2>Riconoscimenti Operativi</h2>
+      <p>Interagisci con il dossier per sbloccare distintivi. Alcuni sono nascosti.</p>
+    </div>
+    <div class="ach-grid" id="achGrid"></div>
+    <div class="ach-progress" id="achProgress">0 / 8 SBLOCCATI</div>
+  </section>
+
+  <div class="hidden-section" id="secretSection">
+    <h3>◆ VERBALE SEGRETO — LIVELLO 2 ◆</h3>
+    <p>Hai attivato il codice riservato. Documento confermato: Giuseppe Sarcinella e Giuseppe Pastore non sono la stessa persona in due corpi diversi. Sono, secondo fonti interne del gruppo, semplicemente due persone con la faccia simile. La cospirazione finisce qui. O forse no.</p>
+    <p style="font-family:'JetBrains Mono',monospace; color:#8a6d1f; font-size:.75rem;">ACCESSO REGISTRATO — GRAZIE PER LA CURIOSITÀ, AGENTE.</p>
+  </div>
+
+</div>
+
+<footer>
+  <div class="fstamp" id="footerStamp">◈ DOCUMENTO NON DECLASSIFICATO ◈</div>
+  <div class="fine">Operazione Ricongiungimento — Archivio riservato del gruppo · 21/07 · ore 20:00 · Nessun Giuseppe è stato danneggiato nella produzione di questo sito</div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
