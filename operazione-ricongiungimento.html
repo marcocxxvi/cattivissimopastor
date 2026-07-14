@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OPERAZIONE RICONGIUNGIMENTO // Dossier Riservato</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root{
+  --black:#050506;
+  --black-2:#0b0b0e;
+  --black-3:#121216;
+  --glass:rgba(255,255,255,0.045);
+  --glass-brd:rgba(255,255,255,0.09);
+  --gold:#d4af37;
+  --gold-bright:#f6dd8a;
+  --gold-dim:#8a6d1f;
+  --white:#f3efe4;
+  --white-dim:#9a978d;
+  --red:#a3241f;
+  --green:#3fd58a;
+  --radius:16px;
+  --serif:'Cinzel',serif;
+  --sans:'Space Grotesk',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--black);
+  color:var(--white);
+  font-family:var(--sans);
+  overflow-x:hidden;
+  position:relative;
+  min-height:100vh;
+}
+::selection{background:var(--gold); color:#000;}
+
+/* ---------- ambient background ---------- */
+#bgcanvas{position:fixed; inset:0; z-index:0; opacity:.55; pointer-events:none;}
+.noise{position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.vignette{position:fixed; inset:0; z-index:1; pointer-events:none;
+  background:radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,.75) 100%);}
+
+.wrap{position:relative; z-index:2; max-width:1180px; margin:0 auto; padding:0 28px;}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:fixed; top:0; left:0; right:0; z-index:50;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 28px;
+  background:linear-gradient(180deg, rgba(5,5,6,.92), rgba(5,5,6,.65) 70%, transparent);
+  backdrop-filter:blur(6px);
+  font-family:var(--mono); font-size:11px; letter-spacing:.14em;
+  color:var(--white-dim);
+}
+.topbar .brand{display:flex; align-items:center; gap:10px; color:var(--gold-bright); font-family:var(--serif); font-weight:700; letter-spacing:.08em; font-size:14px; cursor:default;}
+.topbar .dot{width:7px;height:7px;border-radius:50%;background:var(--green); box-shadow:0 0 8px var(--green); animation:pulse 1.8s infinite;}
+@keyframes pulse{0%,100%{opacity:1} 50%{opacity:.35}}
+.topbar .right{display:flex; align-items:center; gap:18px;}
+.soundtoggle{
+  border:1px solid var(--glass-brd); background:var(--glass); color:var(--white-dim);
+  padding:6px 12px; border-radius:20px; cursor:pointer; font-family:var(--mono); font-size:10px;
+  letter-spacing:.1em; transition:.25s;
+}
+.soundtoggle:hover{border-color:var(--gold-dim); color:var(--gold-bright);}
+
+/* ---------- hero ---------- */
+.hero{
+  min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:140px 20px 80px; position:relative;
+}
+.stamp{
+  font-family:var(--mono); font-size:11px; letter-spacing:.35em; color:var(--red);
+  border:1px solid var(--red); padding:6px 16px; border-radius:3px;
+  text-transform:uppercase; margin-bottom:26px; opacity:.9;
+  transform:rotate(-2deg);
+  box-shadow:0 0 18px rgba(163,36,31,.25) inset;
+}
+.eyebrow{font-family:var(--mono); letter-spacing:.3em; color:var(--gold-dim); font-size:12px; margin-bottom:18px; text-transform:uppercase;}
+.hero h1{
+  font-family:var(--serif); font-weight:900; letter-spacing:.02em;
+  font-size:clamp(2.4rem, 7.2vw, 6rem); line-height:1.02;
+  background:linear-gradient(120deg, var(--gold-bright) 10%, var(--gold) 45%, #a6842a 55%, var(--gold-bright) 90%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 0 26px rgba(212,175,55,.25));
+  margin-bottom:20px;
+}
+.hero .sub{
+  font-size:clamp(.95rem, 1.6vw, 1.15rem); color:var(--white-dim); max-width:620px; margin:0 auto 46px;
+  line-height:1.6; font-weight:400;
+}
+.hero .sub b{color:var(--white); font-weight:600;}
+
+.countdown{
+  display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-bottom:36px;
+}
+.cd-box{
+  width:118px; padding:18px 6px 14px;
+  background:var(--glass); border:1px solid var(--glass-brd); border-radius:var(--radius);
+  backdrop-filter:blur(14px); position:relative; overflow:hidden;
+  transition:transform .3s;
+}
+.cd-box:hover{transform:translateY(-4px); border-color:var(--gold-dim);}
+.cd-box::before{
+  content:''; position:absolute; inset:0; background:radial-gradient(circle at 50% -10%, rgba(212,175,55,.18), transparent 60%);
+}
+.cd-num{
+  font-family:var(--mono); font-weight:700; font-size:clamp(1.8rem,4vw,2.6rem); color:var(--gold-bright);
+  text-shadow:0 0 18px rgba(212,175,55,.4); position:relative;
+}
+.cd-label{font-size:10px; letter-spacing:.2em; color:var(--white-dim); margin-top:6px; text-transform:uppercase; position:relative;}
+
+.scrollcue{
+  margin-top:10px; font-family:var(--mono); font-size:10px; letter-spacing:.25em; color:var(--white-dim);
+  display:flex; flex-direction:column; align-items:center; gap:8px; opacity:.7;
+}
+.scrollcue .line{width:1px; height:34px; background:linear-gradient(var(--gold), transparent); animation:scrolldown 1.8s infinite;}
+@keyframes scrolldown{0%{transform:scaleY(0); transform-origin:top;} 50%{transform:scaleY(1); transform-origin:top;} 51%{transform-origin:bottom;} 100%{transform:scaleY(0); transform-origin:bottom;}}
+
+/* ---------- section shell ---------- */
+section{position:relative; z-index:2; padding:110px 0;}
+.section-head{margin-bottom:46px; text-align:center;}
+.section-head .tag{font-family:var(--mono); font-size:11px; letter-spacing:.3em; color:var(--gold-dim); text-transform:uppercase; margin-bottom:10px;}
+.section-head h2{font-family:var(--serif); font-size:clamp(1.7rem,3.4vw,2.6rem); font-weight:700; color:var(--white);}
+.section-head p{color:var(--white-dim); max-width:560px; margin:14px auto 0; font-size:.95rem; line-height:1.6;}
+
+.card{
+  background:var(--glass); border:1px solid var(--glass-brd); border-radius:var(--radius);
+  backdrop-filter:blur(14px);
+}
+
+/* ---------- dossier ---------- */
+.dossier{padding:40px; position:relative;}
+.dossier::after{
+  content:'RISERVATO'; position:absolute; top:20px; right:24px; font-family:var(--mono);
+  font-size:10px; letter-spacing:.3em; color:var(--red); border:1px solid var(--red); padding:4px 10px; border-radius:2px; opacity:.75;
+}
+.dossier-grid{display:grid; grid-template-columns:1fr 1fr; gap:34px; margin-top:10px;}
+@media(max-width:760px){.dossier-grid{grid-template-columns:1fr;}}
+.agent{display:flex; gap:16px; align-items:flex-start;}
+.avatar{
+  width:64px; height:64px; border-radius:50%; flex:none;
+  background:linear-gradient(145deg, #1b1b20, #0a0a0c);
+  border:1px solid var(--gold-dim);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--serif); font-weight:700; font-size:1.3rem; color:var(--gold-bright);
+  box-shadow:0 0 20px rgba(212,175,55,.12) inset;
+  cursor:pointer; transition:.3s;
+  position:relative;
+}
+.avatar:hover{box-shadow:0 0 24px rgba(212,175,55,.4); transform:scale(1.06);}
+.agent h3{font-family:var(--serif); font-size:1.05rem; color:var(--white); margin-bottom:4px;}
+.agent .role{font-family:var(--mono); font-size:10px; letter-spacing:.15em; color:var(--gold-dim); text-transform:uppercase; margin-bottom:8px;}
+.agent p{font-size:.86rem; color:var(--white-dim); line-height:1.55;}
+
+.brief-lines{margin-top:34px; display:grid; gap:12px; font-family:var(--mono); font-size:.82rem; color:var(--white-dim);}
+.brief-lines .row{display:flex; justify-content:space-between; border-bottom:1px dashed var(--glass-brd); padding-bottom:10px; gap:16px;}
+.brief-lines .row span:first-child{color:var(--gold-dim); letter-spacing:.08em;}
+.brief-lines .row span:last-child{color:var(--white); text-align:right;}
+.redacted{background:#1a1a1a; color:transparent; border-radius:2px; padding:0 6px; user-select:none; cursor:help; box-shadow:inset 0 0 0 1px #2a2a2a;}
+.redacted:hover{background:transparent; color:var(--white); transition:.2s;}
+
+/* ---------- gauges row ---------- */
+.gauges{display:grid; grid-template-columns:1fr 1fr; gap:28px;}
+@media(max-width:760px){.gauges{grid-template-columns:1fr;}}
+.gauge-card{padding:32px; text-align:center;}
+.gauge-title{font-family:var(--mono); font-size:11px; letter-spacing:.2em; color:var(--gold-dim); text-transform:uppercase; margin-bottom:18px;}
+.dial{width:200px; margin:0 auto;}
+.dial-val{font-family:var(--serif); font-size:2.6rem; font-weight:700; color:var(--gold-bright); margin-top:-118px; text-shadow:0 0 20px rgba(212,175,55,.35);}
+.dial-caption{margin-top:8px; font-size:.82rem; color:var(--white-dim); font-family:var(--mono); letter-spacing:.1em;}
+
+.autism-bar-wrap{margin-top:16px;}
+.autism-track{
+  width:100%; height:22px; border-radius:11px; background:#111114; border:1px solid var(--glass-brd);
+  overflow:hidden; position:relative;
+}
+.autism-fill{
+  height:100%; border-radius:11px;
+  background:linear-gradient(90deg, var(--gold-dim), var(--gold), var(--gold-bright));
+  width:0%; transition:width 1.8s cubic-bezier(.16,.9,.3,1); position:relative;
+  box-shadow:0 0 18px rgba(212,175,55,.5);
+}
+.autism-fill::after{
+  content:''; position:absolute; inset:0;
+  background:repeating-linear-gradient(45deg, rgba(0,0,0,.12) 0 8px, transparent 8px 16px);
+}
+.autism-pct{font-family:var(--mono); font-size:2.4rem; font-weight:700; color:var(--gold-bright); margin:14px 0 4px;}
+.autism-label{font-family:var(--mono); font-size:11px; letter-spacing:.2em; color:var(--red); text-transform:uppercase;}
+
+/* ---------- timeline ---------- */
+.timeline{position:relative; margin-top:20px; padding-left:0;}
+.timeline::before{content:''; position:absolute; left:20px; top:0; bottom:0; width:1px; background:linear-gradient(var(--gold-dim), transparent 95%);}
+@media(min-width:760px){.timeline::before{left:50%;}}
+.t-item{position:relative; padding:0 0 44px 52px;}
+@media(min-width:760px){
+  .t-item{width:50%; padding:0 40px 44px 0;}
+  .t-item:nth-child(even){margin-left:50%; padding:0 0 44px 40px;}
+}
+.t-dot{position:absolute; left:14px; top:2px; width:13px; height:13px; border-radius:50%; background:var(--black); border:2px solid var(--gold); box-shadow:0 0 10px var(--gold);}
+@media(min-width:760px){
+  .t-item .t-dot{left:auto; right:-7px;}
+  .t-item:nth-child(even) .t-dot{right:auto; left:-7px;}
+}
+.t-year{font-family:var(--mono); color:var(--gold-bright); font-size:.8rem; letter-spacing:.15em; margin-bottom:6px;}
+.t-title{font-family:var(--serif); font-size:1.05rem; margin-bottom:6px; color:var(--white);}
+.t-desc{font-size:.86rem; color:var(--white-dim); line-height:1.55;}
+
+/* ---------- bets ---------- */
+.bets-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin-top:10px;}
+.bet{
+  padding:22px; cursor:pointer; transition:.25s; position:relative; overflow:hidden;
+}
+.bet:hover{border-color:var(--gold-dim); transform:translateY(-3px);}
+.bet.selected{border-color:var(--gold); box-shadow:0 0 24px rgba(212,175,55,.2);}
+.bet .odds{position:absolute; top:16px; right:18px; font-family:var(--mono); font-size:.75rem; color:var(--gold-bright); border:1px solid var(--gold-dim); padding:2px 8px; border-radius:20px;}
+.bet h4{font-family:var(--sans); font-weight:600; font-size:.98rem; margin:6px 30px 14px 0; color:var(--white); line-height:1.4;}
+.bet-bar{height:6px; border-radius:4px; background:#151518; overflow:hidden; margin-bottom:8px;}
+.bet-bar > div{height:100%; background:linear-gradient(90deg,var(--gold-dim),var(--gold)); width:0%; transition:width 1s;}
+.bet-pct{font-family:var(--mono); font-size:.72rem; color:var(--white-dim);}
+.bet-hint{margin-top:26px; text-align:center; font-family:var(--mono); font-size:.72rem; color:var(--white-dim); letter-spacing:.08em;}
+
+/* ---------- suggestions ---------- */
+.suggest-box{padding:32px;}
+.suggest-form{display:flex; gap:12px; flex-wrap:wrap;}
+.suggest-form textarea{
+  flex:1; min-width:220px; resize:vertical; min-height:52px; max-height:140px;
+  background:#0d0d10; border:1px solid var(--glass-brd); border-radius:10px; color:var(--white);
+  padding:14px 16px; font-family:var(--sans); font-size:.9rem; line-height:1.5;
+}
+.suggest-form textarea:focus{outline:none; border-color:var(--gold-dim);}
+.btn-gold{
+  background:linear-gradient(140deg, var(--gold-bright), var(--gold) 60%, var(--gold-dim));
+  color:#141208; border:none; font-weight:700; font-family:var(--sans); font-size:.85rem;
+  padding:0 26px; border-radius:10px; cursor:pointer; letter-spacing:.02em; transition:.25s;
+  box-shadow:0 4px 18px rgba(212,175,55,.25);
+}
+.btn-gold:hover{transform:translateY(-2px); box-shadow:0 8px 24px rgba(212,175,55,.4);}
+.btn-gold:active{transform:translateY(0);}
+.suggest-list{margin-top:26px; display:grid; gap:12px; max-height:360px; overflow-y:auto; padding-right:4px;}
+.suggest-list::-webkit-scrollbar{width:6px;}
+.suggest-list::-webkit-scrollbar-thumb{background:var(--gold-dim); border-radius:4px;}
+.suggest-item{
+  background:#0d0d10; border:1px solid var(--glass-brd); border-radius:10px; padding:14px 16px;
+  font-size:.88rem; color:var(--white); line-height:1.5; position:relative; animation:pop .35s ease;
+}
+@keyframes pop{from{opacity:0; transform:translateY(8px) scale(.98)} to{opacity:1; transform:none}}
+.suggest-item .meta{font-family:var(--mono); font-size:.68rem; color:var(--gold-dim); margin-top:8px; letter-spacing:.08em;}
+.suggest-item .del{position:absolute; top:10px; right:12px; cursor:pointer; color:var(--white-dim); font-size:.75rem;}
+.suggest-item .del:hover{color:var(--red);}
+.suggest-empty{color:var(--white-dim); font-size:.85rem; font-style:italic; text-align:center; padding:20px 0;}
+
+/* ---------- outcome vote ---------- */
+.outcome-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px;}
+.outcome{padding:26px 22px; text-align:center; cursor:pointer; transition:.25s;}
+.outcome:hover{border-color:var(--gold-dim); transform:translateY(-3px);}
+.outcome.voted{border-color:var(--gold); box-shadow:0 0 22px rgba(212,175,55,.2);}
+.outcome .icon{font-size:1.9rem; margin-bottom:10px;}
+.outcome h4{font-family:var(--serif); font-size:1rem; margin-bottom:12px; color:var(--white);}
+.outcome .obar{height:6px; border-radius:4px; background:#151518; overflow:hidden; margin-bottom:8px;}
+.outcome .obar>div{height:100%; background:linear-gradient(90deg,var(--gold-dim),var(--gold-bright)); width:0%; transition:width 1s;}
+.outcome .opct{font-family:var(--mono); font-size:.78rem; color:var(--white-dim);}
+
+/* ---------- achievements ---------- */
+.ach-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:16px;}
+.ach{padding:20px; text-align:center; opacity:.35; filter:grayscale(1); transition:.4s;}
+.ach.unlocked{opacity:1; filter:grayscale(0); border-color:var(--gold); box-shadow:0 0 20px rgba(212,175,55,.18);}
+.ach .aic{font-size:1.6rem; margin-bottom:8px;}
+.ach h5{font-family:var(--serif); font-size:.88rem; color:var(--white); margin-bottom:4px;}
+.ach p{font-size:.72rem; color:var(--white-dim); line-height:1.4;}
+.ach-progress{text-align:center; margin-top:24px; font-family:var(--mono); font-size:.78rem; color:var(--gold-dim); letter-spacing:.1em;}
+
+/* toast */
+#toastbox{position:fixed; top:70px; right:20px; z-index:999; display:flex; flex-direction:column; gap:10px; max-width:280px;}
+.toast{
+  background:linear-gradient(140deg, #16150f, #0c0c0c); border:1px solid var(--gold); border-radius:12px;
+  padding:14px 16px; box-shadow:0 10px 30px rgba(0,0,0,.5), 0 0 20px rgba(212,175,55,.15);
+  animation:slidein .4s ease, fadeout .4s ease 3.6s forwards;
+  font-family:var(--sans);
+}
+@keyframes slidein{from{transform:translateX(40px); opacity:0} to{transform:none; opacity:1}}
+@keyframes fadeout{to{opacity:0; transform:translateX(20px)}}
+.toast .ttitle{font-family:var(--mono); font-size:10px; letter-spacing:.2em; color:var(--gold-bright); margin-bottom:4px;}
+.toast .tdesc{font-size:.82rem; color:var(--white);}
+
+/* footer */
+footer{padding:60px 0 40px; text-align:center; position:relative; z-index:2;}
+footer .fstamp{
+  display:inline-block; font-family:var(--mono); font-size:10px; letter-spacing:.25em; color:var(--white-dim);
+  border:1px solid var(--glass-brd); padding:8px 18px; border-radius:20px; cursor:pointer; user-select:none; transition:.3s;
+}
+footer .fstamp:hover{border-color:var(--gold-dim); color:var(--gold-bright);}
+footer .fine{margin-top:18px; font-size:.72rem; color:#4a4842; font-family:var(--mono);}
+
+.hidden-section{display:none; padding:60px 0; border-top:1px solid var(--glass-brd); border-bottom:1px solid var(--glass-brd); margin:40px 0;}
+.hidden-section.show{display:block; animation:pop .5s ease;}
+.hidden-section h3{font-family:var(--serif); color:var(--red); text-align:center; margin-bottom:16px; letter-spacing:.05em;}
+.hidden-section p{max-width:640px; margin:0 auto 14px; color:var(--white-dim); font-size:.9rem; line-height:1.7; text-align:center;}
+
+@media(prefers-reduced-motion: reduce){
+  *{animation-duration:.01ms !important; transition-duration:.01ms !important;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bgcanvas"></canvas>
+<div class="noise"></div>
+<div class="vignette"></div>
+
+<div class="topbar">
+  <div class="brand" id="logoClick">⌖ OPERAZIONE&nbsp;RICONGIUNGIMENTO</div>
+  <div class="right">
+    <span><span class="dot"></span> STATO: ATTIVO</span>
+    <button class="soundtoggle" id="soundBtn">🔊 AUDIO ON</button>
+  </div>
+</div>
+
+<div id="toastbox"></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="stamp">TOP SECRET — SOLO PER IL GRUPPO</div>
+  <div class="eyebrow">Dossier Operativo N. 07-GS/GP</div>
+  <h1>IL GRANDE<br>RICONGIUNGIMENTO</h1>
+  <p class="sub">Il 21 luglio, ore 20:00, due linee genetiche indipendenti ma otticamente identiche convergeranno nello stesso cinema. <b>Giuseppe Sarcinella</b> e <b>Giuseppe Pastore</b> saranno, per la prima volta nella storia documentata del gruppo, nella stessa stanza.</p>
+
+  <div class="countdown" id="countdown">
+    <div class="cd-box"><div class="cd-num" id="cd-d">00</div><div class="cd-label">Giorni</div></div>
+    <div class="cd-box"><div class="cd-num" id="cd-h">00</div><div class="cd-label">Ore</div></div>
+    <div class="cd-box"><div class="cd-num" id="cd-m">00</div><div class="cd-label">Minuti</div></div>
+    <div class="cd-box"><div class="cd-num" id="cd-s">00</div><div class="cd-label">Secondi</div></div>
+  </div>
+
+  <div class="scrollcue"><span>ACCEDI AL DOSSIER</span><div class="line"></div></div>
+</section>
+
+<div class="wrap">
+
+  <!-- MISSION BRIEFING -->
+  <section id="briefing">
+    <div class="section-head">
+      <div class="tag">Sezione 01</div>
+      <h2>Mission Briefing</h2>
+      <p>Fascicolo riservato. Accesso consentito solo al personale autorizzato della chat di gruppo.</p>
+    </div>
+
+    <div class="card dossier">
+      <div class="dossier-grid">
+        <div class="agent">
+          <div class="avatar" id="av1">GS</div>
+          <div>
+            <h3>Giuseppe Sarcinella</h3>
+            <div class="role">Soggetto Primario</div>
+            <p>Ignaro protagonista della missione. Da anni oggetto di una running gag collettiva a causa della sua presunta somiglianza con il Soggetto Secondario. Nessun precedente contatto diretto registrato.</p>
+          </div>
+        </div>
+        <div class="agent">
+          <div class="avatar" id="av2">GP</div>
+          <div>
+            <h3>Giuseppe Pastore</h3>
+            <div class="role">Soggetto Secondario ("Il Sosia")</div>
+            <p>Ospite ufficiale dell'evento cinematografico. Ignaro di essere, da anni, il metro di paragone estetico non richiesto di un perfetto sconosciuto.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="brief-lines">
+        <div class="row"><span>Data operazione</span><span>21 Luglio, ore 20:00</span></div>
+        <div class="row"><span>Location</span><span class="redacted">Cinema — coordinate classificate</span></div>
+        <div class="row"><span>Codice missione</span><span class="redacted">PASTORE-2</span></div>
+        <div class="row"><span>Obiettivo primario</span><span>Contatto visivo diretto tra i due soggetti</span></div>
+        <div class="row"><span>Obiettivo secondario</span><span>Foto di gruppo per l'archivio storico della chat</span></div>
+        <div class="row"><span>Rischio di negazione</span><span>Alto (Pastore potrebbe non vedere la somiglianza)</span></div>
+        <div class="row"><span>Personale sul campo</span><span>1 soggetto, 0 supporto, gruppo WhatsApp in ascolto</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAUGES -->
+  <section id="gauges-section">
+    <div class="section-head">
+      <div class="tag">Sezione 02</div>
+      <h2>Metriche Operative</h2>
+      <p>Dati raccolti in tempo reale dal sistema di analisi predittiva del gruppo.</p>
+    </div>
+    <div class="gauges">
+      <div class="card gauge-card">
+        <div class="gauge-title">Probabilità di Successo</div>
+        <svg class="dial" viewBox="0 0 200 120">
+          <path d="M20,110 A80,80 0 0 1 180,110" fill="none" stroke="#151518" stroke-width="14" stroke-linecap="round"/>
+          <path id="gaugeArc" d="M20,110 A80,80 0 0 1 180,110" fill="none" stroke="url(#gaugeGrad)" stroke-width="14" stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="251"/>
+          <defs>
+            <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#8a6d1f"/>
+              <stop offset="100%" stop-color="#f6dd8a"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="dial-val" id="probVal">--%</div>
+        <div class="dial-caption" id="probCaption">Calcolo in corso…</div>
+      </div>
+
+      <div class="card gauge-card">
+        <div class="gauge-title">Livello di Autismo della Missione</div>
+        <div class="autism-pct" id="autismPct">0%</div>
+        <div class="autism-track"><div class="autism-fill" id="autismFill"></div></div>
+        <div class="autism-label" id="autismLabel" style="margin-top:12px;">CALIBRAZIONE…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section id="timeline-section">
+    <div class="section-head">
+      <div class="tag">Sezione 03</div>
+      <h2>Cronologia della Lore</h2>
+      <p>Ricostruzione storica ufficiale degli eventi che hanno portato all'Operazione Ricongiungimento.</p>
+    </div>
+    <div class="timeline">
+      <div class="t-item"><div class="t-dot"></div><div class="t-year">2018</div><div class="t-title">Primo Avvistamento</div><div class="t-desc">Un membro del gruppo nota, in fila al bar, un uomo "identico a Sarcinella". Nessuno gli crede.</div></div>
+      <div class="t-item"><div class="t-dot"></div><div class="t-year">2019</div><div class="t-title">Battesimo del Nome</div><div class="t-desc">Il gruppo WhatsApp ribattezza ufficialmente Sarcinella con il nome "Pastore" per la prima volta. La gag è servita.</div></div>
+      <div class="t-item"><div class="t-dot"></div><div class="t-year">2020</div><div class="t-title">Falso Allarme Social</div><div class="t-desc">Una foto di Pastore viene scambiata per Sarcinella su Facebook. Panico, poi ilarità generale nel gruppo.</div></div>
+      <div class="t-item"><div class="t-dot"></div><div class="t-year">2021</div><div class="t-title">Occasione Mancata</div><div class="t-desc">I due soggetti si trovano, non confermato, nello stesso locale. Nessun contatto avviene. Il rimpianto collettivo cresce.</div></div>
+      <div class="t-item"><div class="t-dot"></div><div class="t-year">2023</div><div class="t-title">Teoria del Multiverso</div><div class="t-desc">Nasce ufficialmente la "Teoria Sarcinella-Pastore": due entità della stessa persona in universi paralleli.</div></div>
+      <div class="t-item"><div class="t-dot"></div><div class="t-year">2025</div><div class="t-title">Segnalazione Strategica</div><div class="t-desc">Fonti interne confermano: Pastore sarà ospite in un cinema. L'intelligence del gruppo entra in stato di allerta.</div></div>
+      <div class="t-item"><div class="t-dot"></div><div class="t-year">2026</div><div class="t-title">IL GRANDE RICONGIUNGIMENTO</div><div class="t-desc">21 luglio, ore 20:00. L'operazione viene lanciata ufficialmente. La storia sta per essere scritta.</div></div>
+    </div>
+  </section>
+
+  <!-- BETS -->
+  <section id="bets-section">
+    <div class="section-head">
+      <div class="tag">Sezione 04</div>
+      <h2>Scommesse Operative</h2>
+      <p>Seleziona un esito. I dati vengono aggregati in tempo reale nel registro del gruppo. Un voto per dispositivo.</p>
+    </div>
+    <div class="bets-grid" id="betsGrid"></div>
+    <div class="bet-hint">Clicca una casella per registrare la tua previsione ufficiale.</div>
+  </section>
+
+  <!-- SUGGESTIONS -->
+  <section id="suggest-section">
+    <div class="section-head">
+      <div class="tag">Sezione 05</div>
+      <h2>Suggerisci Cosa Dire a Pastore</h2>
+      <p>Ogni suggerimento entra a far parte del verbale ufficiale della missione. Scegli con cura le parole.</p>
+    </div>
+    <div class="card suggest-box">
+      <div class="suggest-form">
+        <textarea id="suggestInput" maxlength="220" placeholder='Es: "Salve, sono il suo secondo capitolo."'></textarea>
+        <button class="btn-gold" id="suggestBtn">Registra nel verbale</button>
+      </div>
+      <div class="suggest-list" id="suggestList"></div>
+    </div>
+  </section>
+
+  <!-- OUTCOME VOTE -->
+  <section id="outcome-section">
+    <div class="section-head">
+      <div class="tag">Sezione 06</div>
+      <h2>Previsione dell'Esito Finale</h2>
+      <p>Vota quale sarà il risultato ufficiale della missione. Un voto per dispositivo.</p>
+    </div>
+    <div class="outcome-grid" id="outcomeGrid"></div>
+  </section>
+
+  <!-- ACHIEVEMENTS -->
+  <section id="ach-section">
+    <div class="section-head">
+      <div class="tag">Sezione 07</div>
+      <h2>Riconoscimenti Operativi</h2>
+      <p>Interagisci con il dossier per sbloccare distintivi. Alcuni sono nascosti.</p>
+    </div>
+    <div class="ach-grid" id="achGrid"></div>
+    <div class="ach-progress" id="achProgress">0 / 8 SBLOCCATI</div>
+  </section>
+
+  <div class="hidden-section" id="secretSection">
+    <h3>◆ VERBALE SEGRETO — LIVELLO 2 ◆</h3>
+    <p>Hai attivato il codice riservato. Documento confermato: Giuseppe Sarcinella e Giuseppe Pastore non sono la stessa persona in due corpi diversi. Sono, secondo fonti interne del gruppo, semplicemente due persone con la faccia simile. La cospirazione finisce qui. O forse no.</p>
+    <p style="font-family:'JetBrains Mono',monospace; color:#8a6d1f; font-size:.75rem;">ACCESSO REGISTRATO — GRAZIE PER LA CURIOSITÀ, AGENTE.</p>
+  </div>
+
+</div>
+
+<footer>
+  <div class="fstamp" id="footerStamp">◈ DOCUMENTO NON DECLASSIFICATO ◈</div>
+  <div class="fine">Operazione Ricongiungimento — Archivio riservato del gruppo · 21/07 · ore 20:00 · Nessun Giuseppe è stato danneggiato nella produzione di questo sito</div>
+</footer>
+
+<script>
+/* ============ AMBIENT CANVAS PARTICLES ============ */
+const canvas = document.getElementById('bgcanvas');
+const ctx = canvas.getContext('2d');
+let W,H,particles=[];
+function resize(){W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight;}
+window.addEventListener('resize', resize); resize();
+for(let i=0;i<60;i++){
+  particles.push({x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.6+.3, s:Math.random()*.3+.05, o:Math.random()*.5+.1});
+}
+function drawParticles(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#d4af37';
+  particles.forEach(p=>{
+    ctx.globalAlpha=p.o;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+    p.y -= p.s;
+    if(p.y<-10){p.y=H+10; p.x=Math.random()*W;}
+  });
+  ctx.globalAlpha=1;
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+/* ============ SOUND ============ */
+let audioCtx=null;
+let soundOn = localStorage.getItem('ric_sound') !== 'off';
+function updateSoundBtn(){document.getElementById('soundBtn').textContent = soundOn ? '🔊 AUDIO ON' : '🔇 AUDIO OFF';}
+updateSoundBtn();
+document.getElementById('soundBtn').addEventListener('click', ()=>{
+  soundOn = !soundOn;
+  localStorage.setItem('ric_sound', soundOn?'on':'off');
+  updateSoundBtn();
+  if(soundOn) blip(660,.05);
+});
+function blip(freq=520, dur=.06){
+  if(!soundOn) return;
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type='sine'; o.frequency.value=freq;
+    g.gain.setValueAtTime(.06, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.0001, audioCtx.currentTime+dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime+dur);
+  }catch(e){}
+}
+
+/* ============ COUNTDOWN ============ */
+const target = new Date('2026-07-21T20:00:00');
+function tickCountdown(){
+  const now = new Date();
+  let diff = target - now;
+  if(diff < 0) diff = 0;
+  const d = Math.floor(diff/(1000*60*60*24));
+  const h = Math.floor((diff/(1000*60*60))%24);
+  const m = Math.floor((diff/(1000*60))%60);
+  const s = Math.floor((diff/1000)%60);
+  document.getElementById('cd-d').textContent = String(d).padStart(2,'0');
+  document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
+  document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
+  document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
+}
+tickCountdown(); setInterval(tickCountdown,1000);
+
+/* ============ GAUGES ============ */
+const probability = Math.floor(Math.random()*88)+8; // 8-95
+const autismLevel = Math.floor(Math.random()*16)+84; // 84-99
+
+function captionFor(p){
+  if(p<25) return "Esito incerto. Preparare piano B.";
+  if(p<50) return "Possibile, ma servirà fortuna.";
+  if(p<75) return "Condizioni favorevoli rilevate.";
+  return "Il destino è dalla nostra parte.";
+}
+window.addEventListener('load', ()=>{
+  setTimeout(()=>{
+    const circumference = 251;
+    const offset = circumference - (circumference * probability/100);
+    document.getElementById('gaugeArc').style.transition='stroke-dashoffset 1.6s cubic-bezier(.16,.9,.3,1)';
+    document.getElementById('gaugeArc').style.strokeDashoffset = offset;
+    document.getElementById('probVal').textContent = probability + '%';
+    document.getElementById('probCaption').textContent = captionFor(probability);
+  }, 400);
+
+  setTimeout(()=>{
+    document.getElementById('autismFill').style.width = autismLevel + '%';
+    document.getElementById('autismPct').textContent = autismLevel + '%';
+    document.getElementById('autismLabel').textContent = autismLevel>95 ? 'MASSIMO STORICO REGISTRATO' : 'LIVELLO CRITICO';
+  }, 500);
+});
+
+/* ============ ACHIEVEMENTS ============ */
+const ACHIEVEMENTS = {
+  observer:   {name:"Osservatore Attento", desc:"Hai esaminato entrambi gli agenti sul campo.", icon:"👁️"},
+  redactor:   {name:"Occhio di Falco", desc:"Hai svelato un'informazione redatta.", icon:"🔍"},
+  gambler:    {name:"Scommettitore", desc:"Hai piazzato una previsione operativa.", icon:"🎲"},
+  voter:      {name:"Stratega", desc:"Hai votato l'esito della missione.", icon:"🗳️"},
+  writer:     {name:"Sceneggiatore", desc:"Hai suggerito una frase per Pastore.", icon:"✍️"},
+  explorer:   {name:"Esploratore", desc:"Hai raggiunto il fondo del dossier.", icon:"🧭"},
+  konami:     {name:"Agente Segreto", desc:"Hai scoperto il codice nascosto.", icon:"🕵️"},
+  declass:    {name:"Whistleblower", desc:"Hai tentato di declassificare il documento.", icon:"📁"},
+};
+let unlocked = JSON.parse(localStorage.getItem('ric_ach') || '{}');
+
+function renderAchievements(){
+  const grid = document.getElementById('achGrid');
+  grid.innerHTML='';
+  let count=0;
+  Object.entries(ACHIEVEMENTS).forEach(([key,a])=>{
+    const isUn = !!unlocked[key];
+    if(isUn) count++;
+    const el = document.createElement('div');
+    el.className = 'card ach' + (isUn?' unlocked':'');
+    el.innerHTML = `<div class="aic">${isUn?a.icon:'🔒'}</div><h5>${isUn?a.name:'???'}</h5><p>${isUn?a.desc:'Distintivo non ancora sbloccato.'}</p>`;
+    grid.appendChild(el);
+  });
+  document.getElementById('achProgress').textContent = `${count} / ${Object.keys(ACHIEVEMENTS).length} SBLOCCATI`;
+}
+function unlock(key){
+  if(unlocked[key]) return;
+  unlocked[key]=true;
+  localStorage.setItem('ric_ach', JSON.stringify(unlocked));
+  renderAchievements();
+  showToast('DISTINTIVO SBLOCCATO', ACHIEVEMENTS[key].icon + ' ' + ACHIEVEMENTS[key].name);
+  blip(880,.09);
+}
+renderAchievements();
+
+function showToast(title, desc){
+  const box = document.getElementById('toastbox');
+  const t = document.createElement('div');
+  t.className='toast';
+  t.innerHTML = `<div class="ttitle">${title}</div><div class="tdesc">${desc}</div>`;
+  box.appendChild(t);
+  setTimeout(()=>t.remove(), 4200);
+}
+
+/* click avatars -> observer achievement */
+let avClicks = new Set();
+['av1','av2'].forEach(id=>{
+  document.getElementById(id).addEventListener('click', ()=>{
+    blip(420,.05);
+    avClicks.add(id);
+    if(avClicks.size===2) unlock('observer');
+  });
+});
+
+/* redacted reveal */
+document.querySelectorAll('.redacted').forEach(el=>{
+  el.addEventListener('mouseenter', ()=> unlock('redactor'));
+  el.addEventListener('click', ()=> unlock('redactor'));
+});
+
+/* scroll to bottom -> explorer */
+window.addEventListener('scroll', ()=>{
+  if((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 40){
+    unlock('explorer');
+  }
+});
+
+/* ============ BETS ============ */
+const BET_OPTIONS = [
+  {id:'foto', label:'Foto ricordo insieme', odds:'2.5x'},
+  {id:'nega', label:'Pastore nega la somiglianza', odds:'1.8x'},
+  {id:'fuga', label:'Sarcinella scappa in bagno', odds:'4.0x'},
+  {id:'ignoto', label:'Nessuno dei due se ne accorge', odds:'3.2x'},
+  {id:'standing', label:'Standing ovation del gruppo WhatsApp', odds:'6.6x'},
+  {id:'chiede', label:'Pastore chiede "chi sei?"', odds:'5.5x'},
+];
+let betCounts = JSON.parse(localStorage.getItem('ric_bets') || '{}');
+let myBet = localStorage.getItem('ric_mybet') || null;
+BET_OPTIONS.forEach(o=>{ if(!(o.id in betCounts)) betCounts[o.id]=Math.floor(Math.random()*40)+5; });
+
+function renderBets(){
+  const grid = document.getElementById('betsGrid');
+  grid.innerHTML='';
+  const total = Object.values(betCounts).reduce((a,b)=>a+b,0) || 1;
+  BET_OPTIONS.forEach(o=>{
+    const pct = Math.round((betCounts[o.id]/total)*100);
+    const el = document.createElement('div');
+    el.className = 'card bet' + (myBet===o.id ? ' selected':'');
+    el.innerHTML = `
+      <div class="odds">${o.odds}</div>
+      <h4>${o.label}</h4>
+      <div class="bet-bar"><div style="width:${pct}%"></div></div>
+      <div class="bet-pct">${pct}% degli agenti concorda</div>
+    `;
+    el.addEventListener('click', ()=>{
+      if(myBet===o.id) return;
+      if(myBet) betCounts[myBet] = Math.max(0, betCounts[myBet]-1);
+      betCounts[o.id] = (betCounts[o.id]||0)+1;
+      myBet = o.id;
+      localStorage.setItem('ric_bets', JSON.stringify(betCounts));
+      localStorage.setItem('ric_mybet', myBet);
+      renderBets();
+      unlock('gambler');
+      blip(600,.06);
+    });
+    grid.appendChild(el);
+  });
+}
+renderBets();
+
+/* ============ OUTCOME VOTE ============ */
+const OUTCOMES = [
+  {id:'photo', label:'Foto', icon:'📸'},
+  {id:'greet', label:'Saluto', icon:'🤝'},
+  {id:'flee', label:'Fuga', icon:'🏃'},
+  {id:'none', label:'Nessun contatto', icon:'🚫'},
+];
+let outcomeCounts = JSON.parse(localStorage.getItem('ric_outcomes') || '{}');
+let myOutcome = localStorage.getItem('ric_myoutcome') || null;
+OUTCOMES.forEach(o=>{ if(!(o.id in outcomeCounts)) outcomeCounts[o.id]=Math.floor(Math.random()*30)+10; });
+
+function renderOutcomes(){
+  const grid = document.getElementById('outcomeGrid');
+  grid.innerHTML='';
+  const total = Object.values(outcomeCounts).reduce((a,b)=>a+b,0) || 1;
+  OUTCOMES.forEach(o=>{
+    const pct = Math.round((outcomeCounts[o.id]/total)*100);
+    const el = document.createElement('div');
+    el.className = 'card outcome' + (myOutcome===o.id?' voted':'');
+    el.innerHTML = `
+      <div class="icon">${o.icon}</div>
+      <h4>${o.label}</h4>
+      <div class="obar"><div style="width:${pct}%"></div></div>
+      <div class="opct">${pct}%</div>
+    `;
+    el.addEventListener('click', ()=>{
+      if(myOutcome===o.id) return;
+      if(myOutcome) outcomeCounts[myOutcome] = Math.max(0, outcomeCounts[myOutcome]-1);
+      outcomeCounts[o.id] = (outcomeCounts[o.id]||0)+1;
+      myOutcome = o.id;
+      localStorage.setItem('ric_outcomes', JSON.stringify(outcomeCounts));
+      localStorage.setItem('ric_myoutcome', myOutcome);
+      renderOutcomes();
+      unlock('voter');
+      blip(700,.06);
+    });
+    grid.appendChild(el);
+  });
+}
+renderOutcomes();
+
+/* ============ SUGGESTIONS ============ */
+function loadSuggestions(){ return JSON.parse(localStorage.getItem('ric_suggestions') || '[]'); }
+function saveSuggestions(arr){ localStorage.setItem('ric_suggestions', JSON.stringify(arr)); }
+
+function renderSuggestions(){
+  const list = document.getElementById('suggestList');
+  const items = loadSuggestions();
+  list.innerHTML='';
+  if(items.length===0){
+    list.innerHTML = '<div class="suggest-empty">Nessuna frase ancora registrata. Sii il primo agente a proporne una.</div>';
+    return;
+  }
+  items.slice().reverse().forEach((it, idxRev)=>{
+    const idx = items.length - 1 - idxRev;
+    const el = document.createElement('div');
+    el.className='suggest-item';
+    el.innerHTML = `<span class="del" data-idx="${idx}">✕</span>“${it.text}”<div class="meta">Agente anonimo · ${it.time}</div>`;
+    list.appendChild(el);
+  });
+  list.querySelectorAll('.del').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const i = parseInt(e.target.dataset.idx);
+      const arr = loadSuggestions();
+      arr.splice(i,1);
+      saveSuggestions(arr);
+      renderSuggestions();
+    });
+  });
+}
+renderSuggestions();
+
+document.getElementById('suggestBtn').addEventListener('click', ()=>{
+  const input = document.getElementById('suggestInput');
+  const val = input.value.trim();
+  if(!val) return;
+  const arr = loadSuggestions();
+  arr.push({text: val, time: new Date().toLocaleDateString('it-IT', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})});
+  saveSuggestions(arr);
+  input.value='';
+  renderSuggestions();
+  unlock('writer');
+  blip(760,.07);
+});
+document.getElementById('suggestInput').addEventListener('keydown', (e)=>{
+  if(e.key==='Enter' && (e.ctrlKey || e.metaKey)) document.getElementById('suggestBtn').click();
+});
+
+/* ============ FOOTER EASTER EGG (declassify) ============ */
+let footerClicks=0;
+document.getElementById('footerStamp').addEventListener('click', (e)=>{
+  footerClicks++;
+  blip(500,.04);
+  if(footerClicks>=5){
+    e.target.textContent = '◈ DOCUMENTO DECLASSIFICATO ◈';
+    e.target.style.color = '#3fd58a';
+    e.target.style.borderColor = '#3fd58a';
+    unlock('declass');
+  }
+});
+
+/* ============ LOGO TRIPLE CLICK EASTER EGG ============ */
+let logoClicks=0, logoTimer=null;
+document.getElementById('logoClick').addEventListener('click', ()=>{
+  logoClicks++;
+  blip(340,.04);
+  clearTimeout(logoTimer);
+  logoTimer = setTimeout(()=>{ logoClicks=0; }, 900);
+  if(logoClicks>=3){
+    showToast('MESSAGGIO CIFRATO', 'Anche i sosia meritano rispetto. Forse.');
+    logoClicks=0;
+  }
+});
+
+/* ============ KONAMI CODE EASTER EGG ============ */
+const konami = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+let konamiIdx=0;
+window.addEventListener('keydown', (e)=>{
+  const key = e.key.length===1 ? e.key.toLowerCase() : e.key;
+  if(key === konami[konamiIdx]){
+    konamiIdx++;
+    if(konamiIdx===konami.length){
+      document.getElementById('secretSection').classList.add('show');
+      document.getElementById('secretSection').scrollIntoView({behavior:'smooth', block:'center'});
+      unlock('konami');
+      konamiIdx=0;
+    }
+  } else {
+    konamiIdx = (key===konami[0]) ? 1 : 0;
+  }
+});
+</script>
+</body>
+</html>
